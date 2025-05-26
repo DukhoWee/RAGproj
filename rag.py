@@ -22,17 +22,12 @@ st.title("RAG Chatbot")
 st.markdown(
     """
     <style>
-    /* 텍스트 입력 위젯 전체 컨테이너를 잡아서 */
     div[data-testid="stTextInput"] > div > div > input {
-        /* 텍스트 색상 */
         color: #f0f0f0 !important;
-        /* 배경색 */
         background-color: #000000 !important;
-        /* 테두리 색상 */
         border: 2px solid #f0f0f0 !important;
     }
 
-    /* 포커스 되었을 때 (예: 클릭했을 때) */
     div[data-testid="stTextInput"] > div > div > input:focus {
         outline: none !important;
         box-shadow: none !important;
@@ -81,8 +76,6 @@ def retrieve(query: str):
 
 tools = ToolNode([retrieve])
 
-
-# Step 3: Generate a response using the retrieved content.
 def generate(state: MessagesState):
     """Generate answer."""
     # Get generated ToolMessages
@@ -146,23 +139,17 @@ with st.form("chat_form", clear_on_submit=True):
     user_input = st.text_input("무엇이든 물어보세요", "")
     submit = st.form_submit_button("제출")
 if submit and user_input:
-    # 1) 사용자 메시지 쌓기
     st.session_state.messages.append({"role":"user","content":user_input})
-    # 2) 빈 컨테이너 마련 (스트리밍 출력용)
     chat_placeholder = st.empty()
-    # 3) graph.stream 호출
     for step in st.session_state.graph.stream(
         {"messages": st.session_state.messages},
         stream_mode="values",
     ):
-        # 각 단계의 마지막 메시지를 렌더링
         msg = step["messages"][-1]
         role = msg.role if hasattr(msg, "role") else msg.type
         content = msg.content
 
-        # 화면에 누적 출력
         chat_placeholder.markdown(f"**{role}**: {content}")
-        # 세션 상태에도 저장해 두면 재실행 시에도 기록 유지
         st.session_state.messages.append({
             "role": role,
             "content": content
